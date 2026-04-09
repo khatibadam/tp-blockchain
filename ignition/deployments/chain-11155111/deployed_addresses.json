@@ -1,3 +1,4 @@
 {
-  "SimpleStorageModule#SimpleStorage": "0x8345476a2D88411147518FFEb8c2A43C370DE2CF"
+  "SimpleStorageModule#SimpleStorage": "0x8345476a2D88411147518FFEb8c2A43C370DE2CF",
+  "VotingSimpleModule#VotingSimple": "0x0E54789f23bdc5fb7973a410a50992FedFd26825"
 }
