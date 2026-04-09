@@ -1,0 +1,40 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_28-b1eaa5a0d4a44c5bc10ea48d46a926d8b0e44039",
+  "solcVersion": "0.8.28",
+  "solcLongVersion": "0.8.28+commit.7893614a",
+  "compilerType": "solc",
+  "userSourceNameMap": {
+    "contracts/SimpleStorage.sol": "project/contracts/SimpleStorage.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "cancun",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/SimpleStorage.sol": {
+        "content": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.28;\r\n\r\n/**\r\n * @title SimpleStorage\r\n * @notice Contrat de démonstration : stockage d'une valeur uint256\r\n * @dev Illustre les concepts fondamentaux de Solidity :\r\n *      variables d'état, visibilité, events, modifiers, constructor\r\n */\r\ncontract SimpleStorage {\r\n\r\n    // --- Variables d'état ---\r\n\r\n    /// @notice Adresse du déployeur — seul autorisé à écrire\r\n    address public owner;\r\n\r\n    /// @notice La valeur stockée sur la blockchain\r\n    uint256 private storedValue;\r\n\r\n    /// @notice Compteur du nombre total de modifications\r\n    uint256 public updateCount;\r\n\r\n    // --- Events ---\r\n\r\n    /// @notice Emis à chaque modification de la valeur stockée\r\n    /// @param oldValue Ancienne valeur\r\n    /// @param newValue Nouvelle valeur\r\n    /// @param updatedBy Adresse qui a effectué la modification\r\n    event ValueUpdated(\r\n        uint256 indexed oldValue,\r\n        uint256 newValue,\r\n        address indexed updatedBy\r\n    );\r\n\r\n    // --- Errors ---\r\n\r\n    /// @notice Erreur levée si l'appelant n'est pas le owner\r\n    error NotOwner(address caller, address owner);\r\n\r\n    // --- Modifiers ---\r\n\r\n    /// @dev Restreint l'accès au owner du contrat\r\n    modifier onlyOwner() {\r\n        if (msg.sender != owner) {\r\n            revert NotOwner(msg.sender, owner);\r\n        }\r\n        _;\r\n    }\r\n\r\n    // --- Constructor ---\r\n\r\n    /// @notice Initialise le contrat avec le déployeur comme owner\r\n    constructor() {\r\n        owner = msg.sender;\r\n        storedValue = 0;\r\n        updateCount = 0;\r\n    }\r\n\r\n    // --- Fonctions d'écriture ---\r\n\r\n    /**\r\n     * @notice Modifie la valeur stockée\r\n     * @dev Seul le owner peut appeler cette fonction\r\n     * @param newValue La nouvelle valeur à stocker\r\n     */\r\n    function store(uint256 newValue) external onlyOwner {\r\n        uint256 oldValue = storedValue;\r\n        storedValue = newValue;\r\n        updateCount += 1;\r\n        emit ValueUpdated(oldValue, newValue, msg.sender);\r\n    }\r\n\r\n    // --- Fonctions de lecture ---\r\n\r\n    /**\r\n     * @notice Retourne la valeur actuellement stockée\r\n     * @return La valeur uint256 stockée\r\n     */\r\n    function retrieve() external view returns (uint256) {\r\n        return storedValue;\r\n    }\r\n\r\n    /**\r\n     * @notice Retourne un résumé de l'état du contrat\r\n     * @return _value La valeur stockée\r\n     * @return _updateCount Nombre de modifications\r\n     * @return _owner Adresse du owner\r\n     */\r\n    function getState() external view returns (\r\n        uint256 _value,\r\n        uint256 _updateCount,\r\n        address _owner\r\n    ) {\r\n        return (storedValue, updateCount, owner);\r\n    }\r\n}"
+      }
+    }
+  }
+}

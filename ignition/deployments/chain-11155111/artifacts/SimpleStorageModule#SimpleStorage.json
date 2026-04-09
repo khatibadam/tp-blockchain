@@ -1,0 +1,135 @@
+{
+  "_format": "hh3-artifact-1",
+  "contractName": "SimpleStorage",
+  "sourceName": "contracts/SimpleStorage.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "caller",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "name": "NotOwner",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "oldValue",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "newValue",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "updatedBy",
+          "type": "address"
+        }
+      ],
+      "name": "ValueUpdated",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "getState",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "_value",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_updateCount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "retrieve",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "newValue",
+          "type": "uint256"
+        }
+      ],
+      "name": "store",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "updateCount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x6080604052348015600e575f5ffd5b505f80546001600160a01b0319163317815560018190556002556101f3806100355f395ff3fe608060405234801561000f575f5ffd5b5060043610610055575f3560e01c80631865c57d146100595780632e64cec11461008a5780636057361d1461009c57806369b4ecc9146100b15780638da5cb5b146100ba575b5f5ffd5b6001546002545f546040805193845260208401929092526001600160a01b0316908201526060015b60405180910390f35b6001545b604051908152602001610081565b6100af6100aa366004610181565b6100e4565b005b61008e60025481565b5f546100cc906001600160a01b031681565b6040516001600160a01b039091168152602001610081565b5f546001600160a01b03163314610126575f54604051631194af8760e11b81523360048201526001600160a01b03909116602482015260440160405180910390fd5b60018054828255600280549192915f90610141908490610198565b9091555050604051828152339082907fd96280c39278f2e3eaaf96857762d3a2424fa2d9d4beb116105ca26cc2e329989060200160405180910390a35050565b5f60208284031215610191575f5ffd5b5035919050565b808201808211156101b757634e487b7160e01b5f52601160045260245ffd5b9291505056fea2646970667358221220bb87dda69a8772b95f93b64802c9eca195886ea51ef3dbed5ccba1697467842364736f6c634300081c0033",
+  "deployedBytecode": "0x608060405234801561000f575f5ffd5b5060043610610055575f3560e01c80631865c57d146100595780632e64cec11461008a5780636057361d1461009c57806369b4ecc9146100b15780638da5cb5b146100ba575b5f5ffd5b6001546002545f546040805193845260208401929092526001600160a01b0316908201526060015b60405180910390f35b6001545b604051908152602001610081565b6100af6100aa366004610181565b6100e4565b005b61008e60025481565b5f546100cc906001600160a01b031681565b6040516001600160a01b039091168152602001610081565b5f546001600160a01b03163314610126575f54604051631194af8760e11b81523360048201526001600160a01b03909116602482015260440160405180910390fd5b60018054828255600280549192915f90610141908490610198565b9091555050604051828152339082907fd96280c39278f2e3eaaf96857762d3a2424fa2d9d4beb116105ca26cc2e329989060200160405180910390a35050565b5f60208284031215610191575f5ffd5b5035919050565b808201808211156101b757634e487b7160e01b5f52601160045260245ffd5b9291505056fea2646970667358221220bb87dda69a8772b95f93b64802c9eca195886ea51ef3dbed5ccba1697467842364736f6c634300081c0033",
+  "linkReferences": {},
+  "deployedLinkReferences": {},
+  "immutableReferences": {},
+  "inputSourceName": "project/contracts/SimpleStorage.sol",
+  "buildInfoId": "solc-0_8_28-b1eaa5a0d4a44c5bc10ea48d46a926d8b0e44039"
+}
