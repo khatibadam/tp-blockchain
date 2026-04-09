@@ -1,121 +1,221 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState, useEffect } from 'react';
+import { ethers } from 'ethers';
+import { CONTRACT_ADDRESS, ABI } from './constants/contract';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [account, setAccount] = useState(null);
+  const [contract, setContract] = useState(null);
+  const [isOwner, setIsOwner] = useState(false);
+  const [isVoter, setIsVoter] = useState(false);
+  const [voted, setVoted] = useState(false);
+  const [votingOpen, setVotingOpen] = useState(false);
+  const [candidates, setCandidates] = useState([]);
+  const [voterInput, setVoterInput] = useState('');
+  const [status, setStatus] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function connectWallet() {
+    if (!window.ethereum) {
+      setStatus('MetaMask non detecte');
+      return;
+    }
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const network = await provider.getNetwork();
+      if (network.chainId !== 11155111n) {
+        setStatus('Passer MetaMask sur le reseau Sepolia');
+        return;
+      }
+      const signer = await provider.getSigner();
+      const addr = await signer.getAddress();
+      const c = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+      setAccount(addr);
+      setContract(c);
+      await loadData(c, addr);
+    } catch (err) {
+      setStatus('Connexion refusee');
+    }
+  }
+
+  async function loadData(c, addr) {
+    try {
+      const ownerAddr = await c.owner();
+      setIsOwner(ownerAddr.toLowerCase() === addr.toLowerCase());
+      setIsVoter(await c.registeredVoters(addr));
+      setVoted(await c.hasVoted(addr));
+      setVotingOpen(await c.votingOpen());
+
+      const count = await c.getCandidateCount();
+      const list = [];
+      for (let i = 0; i < count; i++) {
+        const [name, votes] = await c.getCandidate(i);
+        list.push({ id: i, name, votes: Number(votes) });
+      }
+      setCandidates(list);
+    } catch (err) {
+      setStatus('Erreur chargement donnees');
+    }
+  }
+
+  async function handleAddVoter() {
+    if (!voterInput) return;
+    setLoading(true);
+    setStatus('');
+    try {
+      const tx = await contract.addVoter(voterInput);
+      await tx.wait();
+      setStatus('Electeur ajoute');
+      setVoterInput('');
+      await loadData(contract, account);
+    } catch (err) {
+      setStatus(err.reason || 'Erreur transaction');
+    }
+    setLoading(false);
+  }
+
+  async function handleStartVoting() {
+    setLoading(true);
+    setStatus('');
+    try {
+      const tx = await contract.startVoting();
+      await tx.wait();
+      setStatus('Vote ouvert');
+      await loadData(contract, account);
+    } catch (err) {
+      setStatus(err.reason || 'Erreur transaction');
+    }
+    setLoading(false);
+  }
+
+  async function handleEndVoting() {
+    setLoading(true);
+    setStatus('');
+    try {
+      const tx = await contract.endVoting();
+      await tx.wait();
+      setStatus('Vote ferme');
+      await loadData(contract, account);
+    } catch (err) {
+      setStatus(err.reason || 'Erreur transaction');
+    }
+    setLoading(false);
+  }
+
+  async function handleVote(candidateId) {
+    setLoading(true);
+    setStatus('');
+    try {
+      const tx = await contract.vote(candidateId);
+      await tx.wait();
+      setStatus('Vote enregistre');
+      await loadData(contract, account);
+    } catch (err) {
+      setStatus(err.reason || 'Erreur transaction');
+    }
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    if (!contract || !account) return;
+    const refresh = () => loadData(contract, account);
+    contract.on('Voted', refresh);
+    contract.on('VoterRegistered', refresh);
+    contract.on('VotingStarted', refresh);
+    contract.on('VotingEnded', refresh);
+    return () => contract.removeAllListeners();
+  }, [contract, account]);
+
+  useEffect(() => {
+    if (window.ethereum) {
+      window.ethereum.on('accountsChanged', () => window.location.reload());
+      window.ethereum.on('chainChanged', () => window.location.reload());
+    }
+  }, []);
+
+  if (!account) {
+    return (
+      <div className="app">
+        <h1>vote</h1>
+        <button onClick={connectWallet}>Connecter le MetaMask</button>
+        {status && <p className="msg">{status}</p>}
+      </div>
+    );
+  }
+
+  const totalVotes = candidates.reduce((sum, c) => sum + c.votes, 0);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="app">
+      <h1>vote</h1>
+      <p className="account">
+        Connecte : {account.slice(0, 6)}...{account.slice(-4)}
+      </p>
+      <p className={votingOpen ? 'tag open' : 'tag closed'}>
+        {votingOpen ? 'Vote ouvert' : 'Vote ferme'}
+      </p>
+      {isOwner && <span className="badge">ADMIN</span>}
+      {isVoter && <span className="badge green">ELECTEUR</span>}
 
-      <div className="ticks"></div>
+      {status && <p className="msg">{status}</p>}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+      {isOwner && (
+        <div className="panel">
+          <h2>Administration</h2>
+          <div className="row">
+            <input
+              type="text"
+              placeholder="0x..."
+              value={voterInput}
+              onChange={e => setVoterInput(e.target.value)}
+            />
+            <button onClick={handleAddVoter} disabled={loading}>
+              Ajouter electeur
+            </button>
+          </div>
+          {!votingOpen && (
+            <button onClick={handleStartVoting} disabled={loading}>
+              Ouvrir le vote
+            </button>
+          )}
+          {votingOpen && (
+            <button onClick={handleEndVoting} disabled={loading}>
+              Fermer le vote
+            </button>
+          )}
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      )}
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      <div className="panel">
+        <h2>Resultats</h2>
+        {candidates.map(c => (
+          <div key={c.id} className="candidate">
+            <span className="cname">{c.name}</span>
+            <div className="bar-bg">
+              <div
+                className="bar-fill"
+                style={{
+                  width: totalVotes > 0
+                    ? `${(c.votes / totalVotes) * 100}%`
+                    : '0%'
+                }}
+              />
+            </div>
+            <span className="count">{c.votes}</span>
+            {isVoter && votingOpen && !voted && (
+              <button onClick={() => handleVote(c.id)} disabled={loading}>
+                Voter
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {isVoter && voted && (
+        <p className="done">Vous avez deja vote</p>
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;
